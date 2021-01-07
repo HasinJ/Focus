@@ -6,6 +6,7 @@ class Main():
     def __init__(self, parent):
         self.parent=parent
         self.timeBetween=IntVar()
+        self.errorWidget=0
         self.createWidgets()
 
     def createWidgets(self):
@@ -14,15 +15,37 @@ class Main():
         pady=30
 
         self.mainFrame = Frame(self.parent)
-        Label(self.mainFrame,text = 'Time to get focused!',font = ('',25)).pack(padx=padx,pady=pady)
 
+        #title
+        Label(self.mainFrame,text = 'Time to get focused!',font = ('',25)).pack(padx=padx,pady=pady)
+        Button(self.mainFrame,text='Start',command=self.start).pack(padx=padx,pady=1)
         frame = Frame(self.mainFrame) #frame within main frame
-        Label(frame,text = 'Time to get focused!').grid(sticky=W)
-        Entry(frame,textvariable = self.timeBetween,width=80).grid(row=0,column=1,padx=padx,pady=pady)
+
+        #time in between alerts
+        Label(frame,text = 'Time in between alerts: ').grid(sticky=W)
+        Entry(frame,textvariable = self.timeBetween,width=80).grid(row=0,column=1,padx=padx,pady=10)
+
         #Label(frame,text = 'Image').grid(sticky=W)
         frame.pack(padx=padx,pady=pady)
-
         self.mainFrame.pack()
+
+    def start(self):
+        timer=self.timeBetween.get()
+        if timer<0: self.error("Entered negative value for time interval")
+        elif timer==0: self.error("Please enter the length of the timer!")
+        elif timer:
+            print(self.timeBetween)
+            print("exists")
+
+    def error(self, string):
+        if self.errorWidget: self.errorWidget.pack_forget()
+        self.errorWidget = Label(self.mainFrame,text = f'Error: {string}')
+        self.errorWidget.pack(pady=10)
+
+
+class Board(Frame):
+    def __init__(self,parent,*args,**kwargs):
+        Frame.__init__(self,parent,*args,**kwargs)
 
 
 if __name__=="__main__":
