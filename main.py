@@ -6,7 +6,7 @@ class Main():
     def __init__(self, parent):
         self.parent=parent
         self.timeBetween=IntVar()
-        self.errorWidget=0
+        self.error=0
         self.createWidgets()
 
     def createWidgets(self):
@@ -25,25 +25,24 @@ class Main():
         Label(frame,text = 'Time in between alerts: ').grid(sticky=W)
         Entry(frame,textvariable = self.timeBetween,width=80).grid(row=0,column=1,padx=padx,pady=10)
 
-        #Label(frame,text = 'Image').grid(sticky=W)
+        #finalizations
         frame.pack(padx=padx,pady=pady)
         self.mainFrame.pack()
 
     def start(self):
         timer=self.timeBetween.get()
-        if timer<0: self.error("Entered negative value for time interval")
-        elif timer==0: self.error("Please enter the length of the timer!")
+        if timer<0: self.ShowError("You entered negative value for time interval :(")
+        elif timer==0: self.ShowError("Please enter the length of the timer!")
         elif timer:
-            print(self.timeBetween)
             print("exists")
 
-    def error(self, string):
-        if self.errorWidget: self.errorWidget.pack_forget()
-        self.errorWidget = Label(self.mainFrame,text = f'Error: {string}')
-        self.errorWidget.pack(pady=10)
+    def ShowError(self, string):
+        if self.error: self.error.pack_forget()
+        self.error = Label(self.mainFrame,text = f'Error: {string}')
+        self.error.pack(pady=10)
 
 
-class Board(Frame):
+class Application(Frame):
     def __init__(self,parent,*args,**kwargs):
         Frame.__init__(self,parent,*args,**kwargs)
 
