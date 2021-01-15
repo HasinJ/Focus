@@ -24,7 +24,7 @@ class Main():
 
         #title box
         Label(self.mainFrame,text = 'Time to get focused!',font = ('',25)).pack(padx=padx,pady=pady)
-        Button(self.mainFrame,text='Start',command=self.start).pack(padx=padx,pady=1)
+        Button(self.mainFrame,text='Start',command=self.checkTimer).pack(padx=padx,pady=1)
         frame = Frame(self.mainFrame) #frame within main frame
 
 
@@ -54,19 +54,24 @@ class Main():
     def toggle(self,frame):
         if self.alert.get()==1:
             for child in frame.winfo_children(): child.configure(state='enable')
-        if self.alert.get()==0:
+        elif self.alert.get()==0:
             for child in frame.winfo_children(): child.configure(state='disable')
 
-    def start(self):
+    def checkTimer(self):
+        if not self.alert.get():
+            self.start()
+            return
         timer=self.timeBetween.get()
         if timer<0: self.ShowError("You entered negative value for time interval :(")
         elif timer==0: self.ShowError("Please enter the length of the timer!")
         elif timer<60 and self.choice.get()=='Seconds': self.ShowError("Please a higher interval (a minute or more)")
-        elif timer:
-            self.app = Application(self.parent,self.menu)
-            self.mainFrame.pack_forget()
-            self.app.pack()
-            self.app.start()
+        elif timer: self.start()
+
+    def start(self):
+        self.app = Application(self.parent,self.menu)
+        self.mainFrame.pack_forget()
+        self.app.pack()
+        self.app.start()
 
     def menu(self):
         self.app.mouseListen.stop()  # stop thread
@@ -105,8 +110,9 @@ class Application(Frame):
             self.keyboardListen.stop()
 
     def on_click(self,x, y, button, pressed):
+        if not pressed: return
         print('{0} at {1}'.format(
-            'Pressed' if pressed else 'Released',
+            'Pressed',
             (x, y)))
 
 
