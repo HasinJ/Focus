@@ -12,7 +12,8 @@ def on_release(key):
     print('{0} release'.format(
         key))
     if key == keyboard.Key.esc:
-        return False # Stop listener
+        mouseListen.stop()
+        keyboardListen.stop() # Stop listener
 
 #clicks
 def on_move(x, y):
@@ -29,13 +30,15 @@ def on_scroll(x, y, dx, dy):
         (x, y)))
 
 
-while True:
-    # Collect events until released
-    with keyboard.Listener(on_release=on_release) as k_listener, mouse.Listener(on_click=on_click) as m_listener:
-        #needs to do things before .join()
+# Collect events until released
+global mouselisten, keyboardlisten
+mouseListen = mouse.Listener(on_click=on_click)
+keyboardListen = keyboard.Listener(on_release=on_release)
+mouseListen.start()
+keyboardListen.start()
 
-        k_listener.join()
-        m_listener.join()
+mouseListen.join()
+keyboardListen.join()
 
-
-    time.sleep(0.001)
+print("stopped")
+time.sleep(3)
