@@ -1,6 +1,8 @@
 from tkinter import *
 from tkinter.ttk import Entry,Button,OptionMenu
 import time
+import pynput.keyboard as keyboard
+import pynput.mouse as mouse
 
 class Main():
     def __init__(self, parent):
@@ -38,7 +40,7 @@ class Main():
         Checkbutton(frame, text='Time in between alerts: ',variable=self.alert, onvalue=1, offvalue=0, command = lambda : self.toggle(textframe)).grid(sticky='W')
         Label(frame,text = '').grid(sticky='W')
 
-        #time-in-between-alerts text options
+        #time-in-between-alerts dropdown menu
         OptionMenu(frame, self.choice, *self.choices).grid(row=0,column=2,padx=15,pady=10)
         self.choice.set('Seconds')
 
@@ -47,6 +49,7 @@ class Main():
         frame.pack(padx=padx,pady=pady)
         self.mainFrame.pack()
         self.toggle(textframe)
+
 
     def toggle(self,frame):
         if self.alert.get()==1:
@@ -60,9 +63,19 @@ class Main():
         elif timer==0: self.ShowError("Please enter the length of the timer!")
         elif timer<60 and self.choice.get()=='Seconds': self.ShowError("Please a higher interval (a minute or more)")
         elif timer:
-            app = Application(self.parent)
+            self.app = Application(self.parent,self.menu)
             self.mainFrame.pack_forget()
-            app.pack()
+            self.app.pack()
+            self.app.start()
+
+    def menu(self):
+        self.app.mouseListen.stop()  # stop thread
+        self.app.mouseListen.join()  # wait till thread really ends its job
+        self.app.keyboardListen.stop()
+        self.app.keyboardListen.join()
+
+        self.app.pack_forget()
+        self.mainFrame.pack()
 
     def ShowError(self, string):
         if self.error: self.error.pack_forget()
@@ -71,12 +84,30 @@ class Main():
 
 
 class Application(Frame):
-    def __init__(self,parent,*args,**kwargs):
+    def __init__(self,parent,menu,*args,**kwargs):
         Frame.__init__(self,parent,*args,**kwargs)
-        Button(self,text='End',command=self.end).pack(padx=100,pady=100)
+        self.menu=menu
+        self.parent=parent
+        Button(self,text='End',command=self.menu).pack(padx=100,pady=100)
 
-    def end(self):
-        print("hello")
+    def start(self):
+        self.mouseListen = mouse.Listener(on_click=self.on_click)
+        self.keyboardListen = keyboard.Listener(on_release=self.on_release)
+
+        self.mouseListen.start()
+        self.keyboardListen.start()
+
+    def on_release(self,key):
+        print('{0} release'.format(
+            key))
+        if key == keyboard.Key.esc:
+            self.mouseListen.stop()
+            self.keyboardListen.stop()
+
+    def on_click(self,x, y, button, pressed):
+        print('{0} at {1}'.format(
+            'Pressed' if pressed else 'Released',
+            (x, y)))
 
 
 if __name__=="__main__":
