@@ -15,20 +15,20 @@ class Main():
         self.createWidgets()
 
     def createWidgets(self):
-        #pads so that everything is spaced evenly
+        # pads so that everything is spaced evenly
         padx=30
         pady=30
         textframe=0
 
         self.mainFrame = Frame(self.parent)
 
-        #title box
+        # title box
         Label(self.mainFrame,text = 'Time to get focused!',font = ('',25)).pack(padx=padx,pady=pady)
         Button(self.mainFrame,text='Start',command=self.checkTimer).pack(padx=padx,pady=1)
         frame = Frame(self.mainFrame) #frame within main frame
 
 
-        #time-in-between-alerts text input box
+        # time-in-between-alerts text input box
         textframe = Frame(frame, width=100, height=50)
         textframe.columnconfigure(0, weight=10)
         textframe.grid_propagate(False)
@@ -36,15 +36,15 @@ class Main():
         Entry(textframe,textvariable = self.timeBetween,width=80).grid(sticky="we",pady=15)
         self.timeBetween.set(61)
 
-        #time-in-between-alerts label
+        # time-in-between-alerts label
         Checkbutton(frame, text='Time in between alerts: ',variable=self.alert, onvalue=1, offvalue=0, command = lambda : self.toggle(textframe)).grid(sticky='W')
         Label(frame,text = '').grid(sticky='W')
 
-        #time-in-between-alerts dropdown menu
+        # time-in-between-alerts dropdown menu
         OptionMenu(frame, self.choice, *self.choices).grid(row=0,column=2,padx=15,pady=10)
         self.choice.set('Seconds')
 
-        #finalizations
+        # finalizations
         textframe.grid(row=0,column=1,padx=padx,pady=10)
         frame.pack(padx=padx,pady=pady)
         self.mainFrame.pack()
@@ -68,7 +68,7 @@ class Main():
         elif timer: self.start()
 
     def start(self):
-        self.app = Application(self.parent,self.menu)
+        self.app = Application(self.parent,self.menu,self.alert,self.timeBetween)
         self.mainFrame.pack_forget()
         self.app.pack()
         self.app.start()
@@ -82,6 +82,9 @@ class Main():
         self.app.pack_forget()
         self.mainFrame.pack()
 
+        self.timer=0
+        self.alert.set(False)
+
     def ShowError(self, string):
         if self.error: self.error.pack_forget()
         self.error = Label(self.mainFrame,text = f'Error: {string}')
@@ -89,31 +92,52 @@ class Main():
 
 
 class Application(Frame):
-    def __init__(self,parent,menu,*args,**kwargs):
+    def __init__(self,parent,menu,alert,timeBetween,*args,**kwargs):
         Frame.__init__(self,parent,*args,**kwargs)
         self.menu=menu
         self.parent=parent
+        self.alert=alert
+        self.timeBetween=timeBetween
+        self.timer=0
+        self.timeBetween.set(5)
+
         Button(self,text='End',command=self.menu).pack(padx=100,pady=100)
 
     def start(self):
         self.mouseListen = mouse.Listener(on_click=self.on_click)
         self.keyboardListen = keyboard.Listener(on_release=self.on_release)
 
-        self.mouseListen.start()
+        self.mouseListen.start() # opens thread
         self.keyboardListen.start()
 
+        if self.alert.get():
+            self.timer=self.timeBetween.get()
+            self.after(1000,self.updateTimer)
+
+    def updateTimer(self):
+        if not self.timer and self.alert.get():
+            print('BOOM ALERT')
+            self.popupmsg()
+            return
+        elif not self.timer: return
+        self.timer-=1
+        print(self.timer)
+        self.after(1000,self.updateTimer)
+
     def on_release(self,key):
-        print('{0} release'.format(
-            key))
-        if key == keyboard.Key.esc:
-            self.mouseListen.stop()
-            self.keyboardListen.stop()
+        print("key pressed")
+        if not self.timer and self.alert.get():
+            self.after(1001,self.updateTimer)
+        self.timer=self.timeBetween.get()
 
     def on_click(self,x, y, button, pressed):
-        if not pressed: return
-        print('{0} at {1}'.format(
-            'Pressed',
-            (x, y)))
+        if pressed: print("mouse pressed")
+        if not self.timer and self.alert.get():
+            self.after(1001,self.updateTimer)
+        self.timer=self.timeBetween.get()
+
+    def popupmsg(self):
+        pass
 
 
 if __name__=="__main__":
