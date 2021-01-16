@@ -1,5 +1,6 @@
 from tkinter import *
 from tkinter.ttk import Entry,Button,OptionMenu
+import tkinter.messagebox
 import time
 import pynput.keyboard as keyboard
 import pynput.mouse as mouse
@@ -68,22 +69,15 @@ class Main():
         elif timer: self.start()
 
     def start(self):
-        self.app = Application(self.parent,self.menu,self.alert,self.timeBetween)
+        self.app = Application(self.parent,self.menu,self.alert,self.timeBetween,self.mainFrame)
         self.mainFrame.pack_forget()
         self.app.pack()
         self.app.start()
 
     def menu(self):
-        self.app.mouseListen.stop()  # stop thread
-        self.app.mouseListen.join()  # wait till thread really ends its job
-        self.app.keyboardListen.stop()
-        self.app.keyboardListen.join()
-
+        self.app.stopListens()
         self.app.pack_forget()
         self.mainFrame.pack()
-
-        self.timer=0
-        self.alert.set(False)
 
     def ShowError(self, string):
         if self.error: self.error.pack_forget()
@@ -92,14 +86,15 @@ class Main():
 
 
 class Application(Frame):
-    def __init__(self,parent,menu,alert,timeBetween,*args,**kwargs):
+    def __init__(self,parent,menu,alert,timeBetween,mainFrame,*args,**kwargs):
         Frame.__init__(self,parent,*args,**kwargs)
         self.menu=menu
+        self.mainFrame=mainFrame
         self.parent=parent
         self.alert=alert
         self.timeBetween=timeBetween
         self.timer=0
-        self.timeBetween.set(5)
+        #self.timeBetween.set(5) #debugging
 
         Button(self,text='End',command=self.menu).pack(padx=100,pady=100)
 
@@ -136,9 +131,20 @@ class Application(Frame):
             self.after(1001,self.updateTimer)
         self.timer=self.timeBetween.get()
 
-    def popupmsg(self):
-        pass
+    def stopListens(self):
+        print("stopping listens...")
+        self.mouseListen.stop()  # stop thread
+        self.mouseListen.join()  # wait till thread really ends its job
+        self.keyboardListen.stop()
+        self.keyboardListen.join()
+        self.timer=0
 
+    def popupmsg(self):
+        self.stopListens()
+        result=tkinter.messagebox.askquestion('HEY!', 'Are you awake?...')
+
+        if result=='yes': self.start()
+        else: self.menu()
 
 if __name__=="__main__":
     root=Tk()
