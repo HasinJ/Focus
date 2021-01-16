@@ -62,11 +62,18 @@ class Main():
         if not self.alert.get():
             self.start()
             return
-        timer=self.timeBetween.get()
+
+        timer=self.convertTimer(self.timeBetween.get(),self.choice.get())
+        print(timer)
         if timer<0: self.ShowError("You entered negative value for time interval :(")
         elif timer==0: self.ShowError("Please enter the length of the timer!")
-        elif timer<60 and self.choice.get()=='Seconds': self.ShowError("Please a higher interval (a minute or more)")
+        elif timer<30: self.ShowError("Please a higher interval (30 seconds or more)")
         elif timer: self.start()
+
+    def convertTimer(self,time,choice):
+        if choice == "Seconds": return time
+        elif choice == "Minutes": return time*60
+        elif choice == "Hours": return time*3600
 
     def start(self):
         self.app = Application(self.parent,self.menu,self.alert,self.timeBetween,self.mainFrame)
