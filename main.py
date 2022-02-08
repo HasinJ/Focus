@@ -148,6 +148,8 @@ class Application(Frame):
 
     def popupmsg(self):
         self.stopListens()
+        self.parent.attributes('-topmost', 1)              # Raising root above all other windows
+        self.parent.attributes('-topmost', 0)
         result=tkinter.messagebox.askquestion('HEY!', 'Are you awake?...')
 
         if result=='yes': self.start()
